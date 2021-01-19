@@ -93,7 +93,7 @@ public class MyPipeline : RenderPipeline {
 		drawSettings.SetShaderPassName(5, new ShaderTagId("VertexLM"));
 		drawSettings.overrideMaterial = errorMaterial;
 
-		var filterSettings = new FilteringSettings();
+		var filterSettings = FilteringSettings.defaultValue;
 
 		context.DrawRenderers(
 			cull, ref drawSettings, ref filterSettings
