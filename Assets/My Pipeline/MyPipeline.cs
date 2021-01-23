@@ -4,15 +4,28 @@ using UnityEngine.Experimental.Rendering;
 using Conditional = System.Diagnostics.ConditionalAttribute;
 
 public class MyPipeline : RenderPipeline {
-
-	
 	CullingResults cull;
-
 	Material errorMaterial;
-
+	private bool dynamicBatching;
+	private bool instancing;
 	CommandBuffer cameraBuffer = new CommandBuffer {
 		name = "Render Camera"
 	};
+
+	public MyPipeline(bool dynamicBatching, bool instancing)
+	{
+		this.dynamicBatching = dynamicBatching;
+		this.instancing = instancing;
+		// if (dynamicBatching)
+		// {
+		// 	drawFlags = DrawRendererFlags.EnableDynamicBatching;
+		// }
+		//
+		// if (instancing)
+		// {
+		// 	drawFlags |= DrawRendererFlags.EnableInstancing;
+		// }
+	}
 
 	protected override void Render (ScriptableRenderContext renderContext, Camera[] cameras) 
 	{
