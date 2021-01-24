@@ -4,29 +4,20 @@ using UnityEngine.Experimental.Rendering;
 using Conditional = System.Diagnostics.ConditionalAttribute;
 
 public class MyPipeline : RenderPipeline {
-	CullingResults cull;
-	Material errorMaterial;
-	private bool dynamicBatching;
-	private bool instancing;
+	private CullingResults cull;
+	private Material errorMaterial;
+	private bool enableDynamicBatching;
+	private bool enableInstancing;
+	private ScriptableCullingParameters cullingParameters;
 	CommandBuffer cameraBuffer = new CommandBuffer {
 		name = "Render Camera"
 	};
 
-	public MyPipeline(bool dynamicBatching, bool instancing)
+	public MyPipeline(bool enableDynamicBatching, bool enableInstancing)
 	{
-		this.dynamicBatching = dynamicBatching;
-		this.instancing = instancing;
-		// if (dynamicBatching)
-		// {
-		// 	drawFlags = DrawRendererFlags.EnableDynamicBatching;
-		// }
-		//
-		// if (instancing)
-		// {
-		// 	drawFlags |= DrawRendererFlags.EnableInstancing;
-		// }
+		this.enableDynamicBatching = enableDynamicBatching;
+		this.enableInstancing = enableInstancing;
 	}
-
 	protected override void Render (ScriptableRenderContext renderContext, Camera[] cameras) 
 	{
 		foreach (var camera in cameras) {
@@ -34,20 +25,19 @@ public class MyPipeline : RenderPipeline {
 		}
 	}
 
-	void Render (ScriptableRenderContext context, Camera camera) {
-		ScriptableCullingParameters cullingParameters;
-		if (!camera.TryGetCullingParameters(out cullingParameters)) {
+	void Render (ScriptableRenderContext context, Camera camera) 
+	{
+		if (!camera.TryGetCullingParameters(out cullingParameters)) 
+		{
 			return;
 		}
 
 #if UNITY_EDITOR
-		if (camera.cameraType == CameraType.SceneView) {
+		if (camera.cameraType == CameraType.SceneView) 
 			ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
-		}
 #endif
 
 		cull = context.Cull(ref cullingParameters);
-
 		context.SetupCameraProperties(camera);
 
 		CameraClearFlags clearFlags = camera.clearFlags;
@@ -61,31 +51,32 @@ public class MyPipeline : RenderPipeline {
 		context.ExecuteCommandBuffer(cameraBuffer);
 		cameraBuffer.Clear();
 
-		var sorting = new SortingSettings(camera);
+		SortingSettings sorting = new SortingSettings(camera);
+		DrawingSettings drawSettings = new DrawingSettings( new ShaderTagId("SRPDefaultUnlit"), sorting);
+		FilteringSettings filterSettings = FilteringSettings.defaultValue;
+		
+		//Opaque Draw
 		sorting.criteria = SortingCriteria.CommonOpaque;
-		var drawSettings = new DrawingSettings( new ShaderTagId("SRPDefaultUnlit"), sorting);
-	
-		var filterSettings = FilteringSettings.defaultValue;
+		drawSettings.enableInstancing = enableInstancing;
+		drawSettings.enableDynamicBatching = enableDynamicBatching;
 
 		context.DrawRenderers(
 			cull, ref drawSettings, ref filterSettings
 		);
-
 		context.DrawSkybox(camera);
+		
+		//Opaque CommonTransparent
 		sorting.criteria = SortingCriteria.CommonTransparent;
 		drawSettings.sortingSettings = sorting;
 		filterSettings.renderQueueRange = RenderQueueRange.transparent;
-		
 		context.DrawRenderers(
 			cull, ref drawSettings, ref filterSettings
 		);
 
 		DrawDefaultPipeline(context, camera);
-
 		cameraBuffer.EndSample("Render Camera");
 		context.ExecuteCommandBuffer(cameraBuffer);
 		cameraBuffer.Clear();
-
 		context.Submit();
 	}
 
@@ -105,9 +96,7 @@ public class MyPipeline : RenderPipeline {
 		drawSettings.SetShaderPassName(4, new ShaderTagId("VertexLMRGBM"));
 		drawSettings.SetShaderPassName(5, new ShaderTagId("VertexLM"));
 		drawSettings.overrideMaterial = errorMaterial;
-
 		var filterSettings = FilteringSettings.defaultValue;
-
 		context.DrawRenderers(
 			cull, ref drawSettings, ref filterSettings
 		);
