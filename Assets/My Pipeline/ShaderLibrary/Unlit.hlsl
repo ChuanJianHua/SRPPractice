@@ -28,17 +28,17 @@ struct VertexOutput {
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-VertexOutput UnlitPassVertex(VertexInput vertex_input)
+VertexOutput UnlitPassVertex(VertexInput input)
 {
     VertexOutput output;
     UNITY_SETUP_INSTANCE_ID(vertex_input);
     UNITY_TRANSFER_INSTANCE_ID(vertex_input, output);
-    float4 worldPos = mul(UNITY_MATRIX_M, float4(vertex_input.pos.xyz, 1.0));
+    float4 worldPos = mul(UNITY_MATRIX_M, float4(input.pos.xyz, 1.0));
     output.clipPos = mul(unity_MatrixVP,  worldPos);
     return output;                   
 }
 
-float4 UnlitPassFragment(VertexOutput vertex_output) : SV_TARGET
+float4 UnlitPassFragment(VertexOutput input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(vertex_output);
     return UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Color);
