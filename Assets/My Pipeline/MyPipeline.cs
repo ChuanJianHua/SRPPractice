@@ -9,6 +9,13 @@ public class MyPipeline : RenderPipeline {
 	private bool enableDynamicBatching;
 	private bool enableInstancing;
 	private ScriptableCullingParameters cullingParameters;
+
+	//light buffer 
+	private const int maxVisibleLight = 4;
+	static int visibleLightColorsId = Shader.PropertyToID("_VisibleLightColors");
+	static int visibleLightDirectionsId = Shader.PropertyToID("_VisibleLightDirections");
+	private Vector4[] visibleLightColors = new Vector4[maxVisibleLight];
+	private Vector4[] visibleLightDirections = new Vector4[maxVisibleLight];
 	CommandBuffer cameraBuffer = new CommandBuffer {
 		name = "Render Camera"
 	};
@@ -46,10 +53,20 @@ public class MyPipeline : RenderPipeline {
 			(clearFlags & CameraClearFlags.Color) != 0,
 			camera.backgroundColor
 		);
+		//configureLight
+		ConfigureLight();
+		
 		//cameraBuffer.ClearRenderTarget(true, false, Color.clear);
 		cameraBuffer.BeginSample("Render Camera");
 		context.ExecuteCommandBuffer(cameraBuffer);
 		cameraBuffer.Clear();
+		
+		cameraBuffer.SetGlobalVectorArray(
+			visibleLightColorsId, visibleLightColors
+		);
+		cameraBuffer.SetGlobalVectorArray(
+			visibleLightDirectionsId, visibleLightDirections
+		);
 
 		SortingSettings sorting = new SortingSettings(camera);
 		DrawingSettings drawSettings = new DrawingSettings( new ShaderTagId("SRPDefaultUnlit"), sorting);
@@ -100,5 +117,15 @@ public class MyPipeline : RenderPipeline {
 		context.DrawRenderers(
 			cull, ref drawSettings, ref filterSettings
 		);
+	}
+
+	void ConfigureLight()
+	{
+		for (int i = 0; i < cull.visibleLights.Length; i++) {
+			VisibleLight light = cull.visibleLights[i];
+			visibleLightColors[i] = light.finalColor;
+			Vector4 v = light.localToWorldMatrix.GetColumn(2);
+			visibleLightDirections[i] = new Vector4(-v.x, -v.y, -v.z, 0);
+		}
 	}
 }

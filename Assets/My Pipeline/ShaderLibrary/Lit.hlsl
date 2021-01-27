@@ -14,7 +14,7 @@ CBUFFER_START(UnityPerDraw)
     float4x4 unity_ObjectToWorld;
 CBUFFER_END
 
-CBUFFER_START(buffer)
+CBUFFER_START(_LightBuffer)
     float4 _VisibleLightColors [MAX_VISIBLE_LIGHTS];
     float4 _VisibleLightDirections [MAX_VISIBLE_LIGHTS];                            
 CBUFFER_END
