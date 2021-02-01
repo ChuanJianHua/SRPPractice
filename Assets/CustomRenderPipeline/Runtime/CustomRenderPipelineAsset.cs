@@ -7,12 +7,14 @@ namespace CustomRenderPipeline
     public class CustomRenderPipelineAsset : RenderPipelineAsset {
     
         [ SerializeField ]
-        bool dynamicBatching;
+        bool useDynamicBatching;
         [SerializeField]
-        bool instancing;
+        bool useGPUInstancing;
+        [SerializeField]
+        bool useSRPBatcher;
         protected override RenderPipeline CreatePipeline()
         {
-            return new CustomRenderPipeline();
+            return new CustomRenderPipeline(useDynamicBatching, useGPUInstancing, useSRPBatcher);
         }
     }    
 }

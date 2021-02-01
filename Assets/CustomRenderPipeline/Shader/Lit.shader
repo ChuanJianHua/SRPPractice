@@ -1,4 +1,4 @@
-﻿Shader "My Pipeline/Lit"
+﻿Shader "Custom Render Pipeline/Lit"
 {
     Properties
     {

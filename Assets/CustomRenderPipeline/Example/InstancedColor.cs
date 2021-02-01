@@ -4,7 +4,7 @@ public class InstancedColor : MonoBehaviour {
 
 	static MaterialPropertyBlock propertyBlock;
 
-	static int colorID = Shader.PropertyToID("_Color");
+	static int colorID = Shader.PropertyToID("_BaseColor");
 
 	[SerializeField]
 	Color color = Color.white;

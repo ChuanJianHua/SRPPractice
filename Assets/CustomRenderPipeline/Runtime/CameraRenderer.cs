@@ -18,8 +18,12 @@ namespace CustomRenderPipeline
         CullingResults cullingResults;
 
         private static ShaderTagId unLitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+
+        private const int MaxLightCount = 4;
+
+        private Vector4[] visibleLightColors = new Vector4[MaxLightCount];
         
-        public void Render (ScriptableRenderContext context, Camera camera) {
+        public void Render (ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing) {
             this.context = context;
             this.camera = camera;
             PrepareBuffer();
@@ -28,7 +32,7 @@ namespace CustomRenderPipeline
                 return;
             
             Setup();
-            DrawVisibleGeometry();
+            DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
             DrawUnsupportedShaders();
             DrawGizmos();
             Submit();
@@ -37,8 +41,12 @@ namespace CustomRenderPipeline
         void Setup()
         {
             context.SetupCameraProperties(camera);
-            buffer.ClearRenderTarget(true, true, Color.black);
-            buffer.BeginSample(bufferName);
+            var flags = camera.clearFlags;
+            buffer.ClearRenderTarget(
+        flags <= CameraClearFlags.Depth, 
+        flags == CameraClearFlags.Color,
+                flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
+            buffer.BeginSample(SampleName);
             ExecuteBuffer();
         }
 
@@ -52,14 +60,18 @@ namespace CustomRenderPipeline
             return false;
         }
 
-        void DrawVisibleGeometry()
+        void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
         {
             var sortingSettings = new SortingSettings(camera)
             {
                 criteria = SortingCriteria.CommonOpaque
             };
             var drawingSettings = new DrawingSettings(
-                unLitShaderTagId, sortingSettings);
+                unLitShaderTagId, sortingSettings)
+            {
+                enableDynamicBatching = useDynamicBatching,
+                enableInstancing = useGPUInstancing
+            };
             var filteringSettings = new FilteringSettings(RenderQueueRange.all);
             context.DrawRenderers(cullingResults,ref drawingSettings, ref filteringSettings);
             context.DrawSkybox(camera);
@@ -74,7 +86,7 @@ namespace CustomRenderPipeline
         }
         
         void Submit () {
-            buffer.EndSample(bufferName);
+            buffer.EndSample(SampleName);
             ExecuteBuffer();
             context.Submit();
         }

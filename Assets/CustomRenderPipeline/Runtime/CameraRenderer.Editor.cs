@@ -6,6 +6,7 @@ namespace CustomRenderPipeline
 {
     public partial class CameraRenderer
     {
+        string SampleName { get; set; }
         partial void DrawGizmos ();
         partial void DrawUnsupportedShaders ();
         
@@ -51,7 +52,7 @@ namespace CustomRenderPipeline
 
         partial void PrepareBuffer()
         {
-            buffer.name = camera.name;
+            buffer.name = SampleName = camera.name;
         }
         partial void DrawGizmos()
         {
@@ -60,6 +61,8 @@ namespace CustomRenderPipeline
                 context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
             }
         }
+#else
+        const string SampleName = bufferName;
 #endif
         
     } 

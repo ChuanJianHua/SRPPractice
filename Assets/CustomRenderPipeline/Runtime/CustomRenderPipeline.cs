@@ -7,6 +7,13 @@ namespace CustomRenderPipeline
 	public class CustomRenderPipeline : RenderPipeline {
 
 		private CameraRenderer cameraRenderer = new CameraRenderer();
+		bool useDynamicBatching, useGPUInstancing;
+		public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher)
+		{
+			this.useDynamicBatching = useDynamicBatching;
+			this.useGPUInstancing = useGPUInstancing;
+			GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
+		}
 		
 		protected override void Render (ScriptableRenderContext renderContext, Camera[] cameras) 
 		{
@@ -15,11 +22,10 @@ namespace CustomRenderPipeline
 			
 			foreach (var camera in cameras) {
 			    BeginCameraRendering(renderContext, camera);
-			    cameraRenderer.Render(renderContext, camera);
+			    cameraRenderer.Render(renderContext, camera, useDynamicBatching, useGPUInstancing);
 				EndCameraRendering(renderContext, camera);
 			}
 			EndFrameRendering(renderContext, cameras);
-
 		}
 	}
 }
