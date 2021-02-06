@@ -17,7 +17,8 @@ namespace CustomRenderPipeline
         
         CullingResults cullingResults;
 
-        private static ShaderTagId unLitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+        private static ShaderTagId unLitShaderTagId = new ShaderTagId("SRPDefaultUnlit"); 
+        private static ShaderTagId litShaderTagId = new ShaderTagId("CustomLit");
 
         private const int MaxLightCount = 4;
 
@@ -72,6 +73,7 @@ namespace CustomRenderPipeline
                 enableDynamicBatching = useDynamicBatching,
                 enableInstancing = useGPUInstancing
             };
+            drawingSettings.SetShaderPassName(1, litShaderTagId);
             var filteringSettings = new FilteringSettings(RenderQueueRange.all);
             context.DrawRenderers(cullingResults,ref drawingSettings, ref filteringSettings);
             context.DrawSkybox(camera);
@@ -95,6 +97,11 @@ namespace CustomRenderPipeline
         {
             context.ExecuteCommandBuffer(buffer);
             buffer.Clear();
+        }
+
+        void Light()
+        {
+            
         }
     }
 }
