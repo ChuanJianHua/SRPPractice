@@ -6,6 +6,7 @@
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Surface.hlsl"
 #include "../ShaderLibrary/Light.hlsl"
+#include "../ShaderLibrary/BRDF.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
 
 TEXTURE2D(_BaseMap);
@@ -15,6 +16,8 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 struct VertexInput {
@@ -31,13 +34,6 @@ struct VertexOutput {
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-float3 DiffuseLight(int index, float3 normal)
-{
-    float3 lightColor = _VisibleLightColors[index].rgb;
-    float3 lightDirection = _VisibleLightDirections[index].xyz;
-    float3 diffuse = saturate(dot(normal, lightDirection));
-    return lightColor * diffuse;
-}
 
 VertexOutput LitPassVertex(VertexInput input)
 {
@@ -57,22 +53,19 @@ float4 LitPassFragment(VertexOutput input) : SV_TARGET
     UNITY_SETUP_INSTANCE_ID(input);
     float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
     float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
-    float4 albedo = baseMap * baseColor;
-
-    Surface surface;
-    surface.normal = normalize(input.normal);
-    surface.color = albedo.rgb;
-    surface.alpha = albedo.a;
-    input.normal = normalize(input.normal);
-    float4 diffuseLight = 0;
-    for (int i = 0; i < MAX_VISIBLE_LIGHTS; i++) {
-        diffuseLight += float4(DiffuseLight(i, input.normal),1);
-    }
-    float4 color = albedo * diffuseLight;
+    float4 color = baseMap * baseColor;
     #if defined(_CLIPPING)
     clip(color.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
-    #endif
-    return float4(color);
+    #endif                                   
+    Surface surface;
+    surface.normal = normalize(input.normal);
+    surface.color = color.rgb;
+    surface.alpha = color.a;
+    BRDF brdf = GetBRDF(surface);
+    float4 diffuseLight = float4(GetLighting(surface, brdf),color.a);
+
+
+    return diffuseLight;
 }
 
 

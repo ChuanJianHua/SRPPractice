@@ -23,6 +23,8 @@ namespace CustomRenderPipeline
         private const int MaxLightCount = 4;
 
         private Vector4[] visibleLightColors = new Vector4[MaxLightCount];
+
+        private Lighting light = new Lighting();
         
         public void Render (ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing) {
             this.context = context;
@@ -33,6 +35,7 @@ namespace CustomRenderPipeline
                 return;
             
             Setup();
+            light.SetUp(context, cullingResults);
             DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
             DrawUnsupportedShaders();
             DrawGizmos();
