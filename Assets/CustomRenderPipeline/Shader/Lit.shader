@@ -12,6 +12,8 @@
     	[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
 		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0  
     	[Enum(Off, 0, On, 1)] _ZWrite ("Z Write", Float) = 1
+    	
+    	[Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha ("Premultiply Alpha", Float) = 0
     }
     SubShader
     {
@@ -26,9 +28,13 @@
 			#pragma multi_compile_instancing
 			#pragma vertex LitPassVertex
 			#pragma fragment LitPassFragment
-			
+			#pragma shader_feature _PREMULTIPLY_ALPHA
 			#include "../ShaderLibrary/LitPass.hlsl"
 			ENDHLSL
         }
     }
+	
+	CustomEditor "CustomShaderGUI"
 }
+
+
