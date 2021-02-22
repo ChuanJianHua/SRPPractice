@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 
 namespace CustomRenderPipeline
 {
@@ -12,9 +13,11 @@ namespace CustomRenderPipeline
         bool useGPUInstancing;
         [SerializeField]
         bool useSRPBatcher;
+        [FormerlySerializedAs("shadowSetting")] [SerializeField]
+        private ShadowSettings shadowSettings;
         protected override RenderPipeline CreatePipeline()
         {
-            return new CustomRenderPipeline(useDynamicBatching, useGPUInstancing, useSRPBatcher);
+            return new CustomRenderPipeline(useDynamicBatching, useGPUInstancing, useSRPBatcher, shadowSettings);
         }
     }    
 }

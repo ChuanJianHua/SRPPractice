@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace CustomRenderPipeline
@@ -24,21 +25,25 @@ namespace CustomRenderPipeline
 
         private Vector4[] visibleLightColors = new Vector4[MaxLightCount];
 
-        private Lighting light = new Lighting();
+        private Lighting lighting = new Lighting();
         
-        public void Render (ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing) {
+        public void Render (ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing, ShadowSettings shadowSettings) {
             this.context = context;
             this.camera = camera;
             PrepareBuffer();
             PrepareForSceneWindow();
-            if (!Cull())
+            if (!Cull(shadowSettings.maxDistance))
                 return;
             
+            buffer.BeginSample(SampleName);
+            ExecuteBuffer();
+            lighting.SetUp(context, cullingResults, shadowSettings);
+            buffer.EndSample(SampleName);
             Setup();
-            light.SetUp(context, cullingResults);
             DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
             DrawUnsupportedShaders();
             DrawGizmos();
+            lighting.Cleanup();
             Submit();
         }
 
@@ -54,10 +59,11 @@ namespace CustomRenderPipeline
             ExecuteBuffer();
         }
 
-        bool Cull()
+        bool Cull(float maxShadowDistance)
         {
             if (camera.TryGetCullingParameters(out var scriptableCullingParameters))
             {
+                scriptableCullingParameters.shadowDistance = Math.Max(maxShadowDistance, camera.farClipPlane); 
                 cullingResults = context.Cull(ref scriptableCullingParameters);
                 return true;
             }
@@ -100,11 +106,6 @@ namespace CustomRenderPipeline
         {
             context.ExecuteCommandBuffer(buffer);
             buffer.Clear();
-        }
-
-        void Light()
-        {
-            
         }
     }
 }

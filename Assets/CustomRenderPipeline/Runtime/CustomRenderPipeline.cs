@@ -8,10 +8,12 @@ namespace CustomRenderPipeline
 
 		private CameraRenderer cameraRenderer = new CameraRenderer();
 		bool useDynamicBatching, useGPUInstancing;
-		public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher)
+		private ShadowSettings _shadowSettings;
+		public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, ShadowSettings shadowSettings)
 		{
 			this.useDynamicBatching = useDynamicBatching;
 			this.useGPUInstancing = useGPUInstancing;
+			this._shadowSettings = shadowSettings;
 			GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
 			GraphicsSettings.lightsUseLinearIntensity = true;
 		}
@@ -23,7 +25,7 @@ namespace CustomRenderPipeline
 			
 			foreach (var camera in cameras) {
 			    BeginCameraRendering(renderContext, camera);
-			    cameraRenderer.Render(renderContext, camera, useDynamicBatching, useGPUInstancing);
+			    cameraRenderer.Render(renderContext, camera, useDynamicBatching, useGPUInstancing, _shadowSettings);
 				EndCameraRendering(renderContext, camera);
 			}
 			EndFrameRendering(renderContext, cameras);

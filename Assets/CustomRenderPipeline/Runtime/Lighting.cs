@@ -22,12 +22,17 @@ namespace CustomRenderPipeline
         private static int dirLightDirectionsId = Shader.PropertyToID("_DirectionalLightDirections");
 
         private static Vector4[] dirLightColors = new Vector4[maxDirLightCount]; 
-        private static Vector4[] dirLightDirections = new Vector4[maxDirLightCount]; 
 
-        public void SetUp(ScriptableRenderContext context, CullingResults cullingResults)
+        private static Vector4[] dirLightDirections = new Vector4[maxDirLightCount];
+
+        private Shadows shadows = new Shadows();
+
+        public void SetUp(ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings shadowSettings)
         {
             buffer.BeginSample(bufferName);
+            shadows.SetUp(context, cullingResults, shadowSettings);
             SetupLight(cullingResults);
+            shadows.Render();
             buffer.EndSample(bufferName);
             context.ExecuteCommandBuffer(buffer);
             buffer.Clear();
@@ -55,6 +60,12 @@ namespace CustomRenderPipeline
         {
             dirLightColors[index] = visibleLights.finalColor;
             dirLightDirections[index] = -visibleLights.localToWorldMatrix.GetColumn(2);
+            shadows.ReserveDirectionalShadows(visibleLights.light, index);
+        }
+
+        public void Cleanup()
+        {
+            shadows.Cleanup();  
         }
     }
 }
