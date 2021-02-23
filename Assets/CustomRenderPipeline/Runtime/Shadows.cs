@@ -82,12 +82,19 @@ namespace CustomRenderPipeline
             }
         }
 
-        void RenderDirectionalShadows(int index, int atlasSize)
+        void RenderDirectionalShadows(int index, int tileSize)
         {
             ShadowedDirectionalLight light = shadowedDirectionalLights[index];
-            var shadowSetting = new ShadowDrawingSettings()
+            var shadowSettings = new ShadowDrawingSettings()
                 {cullingResults = cullingResults, lightIndex = light.visibleLightIndex};
-            
+            cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(light.visibleLightIndex, 0, 1,
+                Vector3.zero, tileSize, 0f,
+                out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,
+                out ShadowSplitData splitData);
+            shadowSettings.splitData = splitData;
+            buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
+            ExecuteBuffer();
+            context.DrawShadows(ref shadowSettings);
         }
 
         public void Cleanup()
