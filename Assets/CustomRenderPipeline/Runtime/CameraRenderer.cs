@@ -63,7 +63,7 @@ namespace CustomRenderPipeline
         {
             if (camera.TryGetCullingParameters(out var scriptableCullingParameters))
             {
-                scriptableCullingParameters.shadowDistance = Math.Max(maxShadowDistance, camera.farClipPlane); 
+                scriptableCullingParameters.shadowDistance = Math.Min(maxShadowDistance, camera.farClipPlane); 
                 cullingResults = context.Cull(ref scriptableCullingParameters);
                 return true;
             }

@@ -1,6 +1,7 @@
-﻿using Unity.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
+using Matrix4x4 = UnityEngine.Matrix4x4;
+using Vector3 = UnityEngine.Vector3;
 
 namespace CustomRenderPipeline
 {
@@ -8,7 +9,7 @@ namespace CustomRenderPipeline
     {
         private const string bufferName = "Shadows";
 
-        private const int maxShadowedDirectionalLightCount = 1;
+        private const int maxShadowedDirectionalLightCount = 4;
         
         private CommandBuffer buffer = new CommandBuffer()
         {
@@ -27,7 +28,7 @@ namespace CustomRenderPipeline
         private static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
 
         private int shadowedDirectionalLightCount;
-        
+
         public void SetUp(ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings shadowSettings)
         {
             this.context = context;
@@ -76,15 +77,18 @@ namespace CustomRenderPipeline
             buffer.BeginSample(bufferName);
             ExecuteBuffer();
 
+            int split = shadowedDirectionalLightCount <= 1 ? 1 : 2;
+            int tileSize = atlasSize / split;
+            
             for (int i = 0; i < shadowedDirectionalLightCount; i++)
             {
-                RenderDirectionalShadows(i, atlasSize);
+                RenderDirectionalShadows(i, split, tileSize);
             }
             buffer.EndSample(bufferName);
             ExecuteBuffer();
         }
 
-        void RenderDirectionalShadows(int index, int tileSize)
+        void RenderDirectionalShadows(int index, int split, int tileSize)
         {
             ShadowedDirectionalLight light = shadowedDirectionalLights[index];
             var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex);
@@ -93,6 +97,7 @@ namespace CustomRenderPipeline
                 out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,
                 out ShadowSplitData splitData);
             shadowSettings.splitData = splitData;
+            SetTileViewport(index, split, tileSize);
             buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
             ExecuteBuffer();
             context.DrawShadows(ref shadowSettings);
@@ -102,6 +107,12 @@ namespace CustomRenderPipeline
         {
             buffer.ReleaseTemporaryRT(dirShadowAtlasId);
             ExecuteBuffer();
+        }
+
+        void SetTileViewport(int index, int split, int tileSize)
+        {
+            var offset = new Vector2(index % split, (int)(index / split));
+            buffer.SetViewport(new Rect(offset.x * tileSize, offset.y * tileSize, tileSize, tileSize));
         }
     }
     
