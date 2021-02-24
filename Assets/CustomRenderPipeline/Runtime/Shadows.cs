@@ -80,13 +80,14 @@ namespace CustomRenderPipeline
             {
                 RenderDirectionalShadows(i, atlasSize);
             }
+            buffer.EndSample(bufferName);
+            ExecuteBuffer();
         }
 
         void RenderDirectionalShadows(int index, int tileSize)
         {
             ShadowedDirectionalLight light = shadowedDirectionalLights[index];
-            var shadowSettings = new ShadowDrawingSettings()
-                {cullingResults = cullingResults, lightIndex = light.visibleLightIndex};
+            var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex);
             cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(light.visibleLightIndex, 0, 1,
                 Vector3.zero, tileSize, 0f,
                 out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,

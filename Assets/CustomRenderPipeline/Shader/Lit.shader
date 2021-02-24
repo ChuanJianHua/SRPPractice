@@ -45,7 +45,7 @@
             #pragma shader_feature _CLIPPING
 			#pragma multi_compile_instancing
 			#pragma vertex ShadowCasterPassVertex
-			#pragma fragment ShadowCasterPassFragment
+			#pragma fragment ShadowCasterPassFragment 
 			#pragma shader_feature _PREMULTIPLY_ALPHA
 			#include "../ShaderLibrary/ShadowCasterPass.hlsl"
 			ENDHLSL

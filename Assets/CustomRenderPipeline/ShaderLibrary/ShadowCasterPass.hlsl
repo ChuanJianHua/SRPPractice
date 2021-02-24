@@ -37,7 +37,7 @@ VertexOutput ShadowCasterPassVertex(VertexInput input)
     return output;                   
 }
 
-float4 ShadowCasterPassFragment(VertexOutput input) : SV_TARGET
+void ShadowCasterPassFragment(VertexOutput input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
