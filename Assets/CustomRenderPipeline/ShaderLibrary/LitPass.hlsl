@@ -5,6 +5,7 @@
 
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Surface.hlsl"
+#include "../ShaderLibrary/Shadows.hlsl"
 #include "../ShaderLibrary/Light.hlsl"
 #include "../ShaderLibrary/BRDF.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
@@ -60,6 +61,7 @@ float4 LitPassFragment(VertexOutput input) : SV_TARGET
     clip(base.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
     #endif                                   
     Surface surface;
+    surface.position = input.posWS;
     surface.normal = normalize(input.normal);
     surface.color = base.rgb;
     surface.alpha = base.a;
