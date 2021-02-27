@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 using UnityEngine.UI;
 
 namespace CustomRenderPipeline
@@ -10,11 +11,18 @@ namespace CustomRenderPipeline
         [Min(0)]
         public float maxDistance;
 
-        public Directional directional = new Directional() {atlasSize = TextureSize._1024};
+        public Directional directional = new Directional()
+        {
+            atlasSize = MapSize._1024,
+            cascadeCount = 4,
+            cascadeRatio1 = 0.1f,
+            cascadeRatio2 = 0.25f,
+            cascadeRatio3 = 0.5f
+        };
     }
 
     [Serializable]
-    public enum TextureSize
+    public enum MapSize
     {
         _256 = 256,
         _512 = 512,
@@ -25,9 +33,15 @@ namespace CustomRenderPipeline
     }
     
     [System.Serializable]
-    public struct Directional 
+    public struct Directional
     {
-        public TextureSize atlasSize;
+        public MapSize atlasSize;
+        [Range(1, 4)]
+        public int cascadeCount;
+        [Range(0, 1)]
+        public float cascadeRatio1, cascadeRatio2, cascadeRatio3;
+
+        public Vector3 CascadeRatios => new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
     }
 
 }
