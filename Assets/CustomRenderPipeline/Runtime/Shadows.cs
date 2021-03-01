@@ -29,11 +29,10 @@ namespace CustomRenderPipeline
             dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas"),
             dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices"),
             cascadeCountId = Shader.PropertyToID("_CascadeCount"),
-            cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres");
-            
+            cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres"),
+            shadowDistanceId = Shader.PropertyToID("_ShadowDistance");
 
         private Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
-
         private static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades]; 
         private int shadowedDirectionalLightCount;
 
@@ -102,6 +101,7 @@ namespace CustomRenderPipeline
             buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
             buffer.SetGlobalInt(cascadeCountId, settings.directional.cascadeCount);
             buffer.SetGlobalVectorArray(cascadeCullingSpheresId, cascadeCullingSpheres);
+            buffer.SetGlobalFloat(shadowDistanceId, settings.maxDistance);
             buffer.EndSample(bufferName);
             ExecuteBuffer();
         }
