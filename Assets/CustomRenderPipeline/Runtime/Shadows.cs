@@ -30,10 +30,17 @@ namespace CustomRenderPipeline
             dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices"),
             cascadeCountId = Shader.PropertyToID("_CascadeCount"),
             cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres"),
-            shadowDistanceId = Shader.PropertyToID("_ShadowDistance");
+            cascadeDataId = Shader.PropertyToID("_CascadeData"),
+            // shadowDistanceId = Shader.PropertyToID("_ShadowDistance"),
+            shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
+            
 
-        private Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
-        private static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades]; 
+        private static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
+
+        private static Vector4[]
+            cascadeCullingSpheres = new Vector4[maxCascades],
+            cascadeData = new Vector4[maxCascades];
+        
         private int shadowedDirectionalLightCount;
 
         public void SetUp(ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings shadowSettings)
@@ -101,7 +108,11 @@ namespace CustomRenderPipeline
             buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
             buffer.SetGlobalInt(cascadeCountId, settings.directional.cascadeCount);
             buffer.SetGlobalVectorArray(cascadeCullingSpheresId, cascadeCullingSpheres);
-            buffer.SetGlobalFloat(shadowDistanceId, settings.maxDistance);
+            buffer.SetGlobalVectorArray(cascadeDataId, cascadeData);
+            // buffer.SetGlobalFloat(shadowDistanceId, settings.maxDistance);
+            float f = 1f - settings.directional.cascadeFade;
+            buffer.SetGlobalVector(shadowDistanceFadeId,
+                new Vector4(1 / settings.maxDistance, 1 / settings.distanceFade, 1f / (1f - f * f)));
             buffer.EndSample(bufferName);
             ExecuteBuffer();
         }
@@ -124,9 +135,7 @@ namespace CustomRenderPipeline
                 shadowSettings.splitData = splitData;
                 if (index == 0)
                 {
-                    Vector4 cullingSphere = splitData.cullingSphere;
-                    cullingSphere.w *= cullingSphere.w;
-                    cascadeCullingSpheres[i] = cullingSphere;
+                    SetCascadeData(i, splitData.cullingSphere, tileSize);
                 }
                 int tileOffIndex = tileOffset + i;
                 dirShadowMatrices[tileOffIndex] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix, SetTileViewport(tileOffIndex, split, tileSize), split) ; 
@@ -134,6 +143,13 @@ namespace CustomRenderPipeline
                 ExecuteBuffer();
                 context.DrawShadows(ref shadowSettings);
             }
+        }
+
+        void SetCascadeData(int index, Vector4 cullingSphere, float tileSize)
+        {
+            cascadeData[index].x = 1f / cullingSphere.w;
+            cullingSphere.w *= cullingSphere.w;
+            cascadeCullingSpheres[index] = cullingSphere;
         }
 
         public void Cleanup()
