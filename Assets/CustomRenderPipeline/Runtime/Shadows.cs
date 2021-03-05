@@ -31,8 +31,16 @@ namespace CustomRenderPipeline
             cascadeCountId = Shader.PropertyToID("_CascadeCount"),
             cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres"),
             cascadeDataId = Shader.PropertyToID("_CascadeData"),
+            shadowAtlasSizeId = Shader.PropertyToID("_ShadowAtlasSize"),
             // shadowDistanceId = Shader.PropertyToID("_ShadowDistance"),
             shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
+
+        private static string[] directionalFilterKeywords =
+        {
+            "_DIRECTIONAL_PCF3",
+            "_DIRECTIONAL_PCF5",
+            "_DIRECTIONAL_PCF7"
+        };
             
 
         private static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
@@ -67,7 +75,8 @@ namespace CustomRenderPipeline
                 shadowedDirectionalLights[shadowedDirectionalLightCount] = new ShadowedDirectionalLight()
                 {
                     visibleLightIndex = visibleLightIndex,
-                    slopeScaleBias = light.shadowBias
+                    slopeScaleBias = light.shadowBias,
+                    nearPlaneOffset = light.shadowNearPlane
                 };
                 
                 return new Vector3(
@@ -88,14 +97,14 @@ namespace CustomRenderPipeline
             }
             else
             {
-                buffer.GetTemporaryRT(dirShadowAtlasId, 1, 1, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
+                buffer.GetTemporaryRT(dirShadowAtlasId, 1, 1, 32, UnityEngine.FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
             }
         }
 
         void RenderDirectionalShadows()
         {
             int atlasSize = (int) settings.directional.atlasSize;
-            buffer.GetTemporaryRT(dirShadowAtlasId, atlasSize, atlasSize, 32, FilterMode.Bilinear,
+            buffer.GetTemporaryRT(dirShadowAtlasId, atlasSize, atlasSize, 32, UnityEngine.FilterMode.Bilinear,
                 RenderTextureFormat.Shadowmap);
             buffer.SetRenderTarget(dirShadowAtlasId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
             buffer.ClearRenderTarget(true, false, Color.clear);
@@ -118,6 +127,8 @@ namespace CustomRenderPipeline
             float f = 1f - settings.directional.cascadeFade;
             buffer.SetGlobalVector(shadowDistanceFadeId,
                 new Vector4(1 / settings.maxDistance, 1 / settings.distanceFade, 1f / (1f - f * f)));
+            SetKeywords();            
+            buffer.SetGlobalVector(shadowAtlasSizeId, new Vector4(atlasSize, 1f / atlasSize));
             buffer.EndSample(bufferName);
             ExecuteBuffer();
         }
@@ -134,7 +145,7 @@ namespace CustomRenderPipeline
             for (int i = 0; i < cascadeCount; i++)
             {
                 cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(light.visibleLightIndex, i, cascadeCount,
-                    ratios, tileSize, 0f,
+                    ratios, tileSize, light.nearPlaneOffset,
                     out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,
                     out ShadowSplitData splitData);
                 shadowSettings.splitData = splitData;
@@ -167,6 +178,18 @@ namespace CustomRenderPipeline
         {
             buffer.ReleaseTemporaryRT(dirShadowAtlasId);
             ExecuteBuffer();
+        }
+        
+        void SetKeywords () {
+            int enabledIndex = (int)settings.directional.filter - 1;
+            for (int i = 0; i < directionalFilterKeywords.Length; i++) {
+                if (i == enabledIndex) {
+                    buffer.EnableShaderKeyword(directionalFilterKeywords[i]);
+                }
+                else {
+                    buffer.DisableShaderKeyword(directionalFilterKeywords[i]);
+                }
+            }
         }
 
         Vector2 SetTileViewport(int index, int split, int tileSize)
@@ -203,5 +226,6 @@ namespace CustomRenderPipeline
     struct ShadowedDirectionalLight {
         public int visibleLightIndex;
         public float slopeScaleBias;
+        public float nearPlaneOffset;
     }
 }

@@ -16,6 +16,7 @@ namespace CustomRenderPipeline
         public Directional directional = new Directional()
         {
             atlasSize = MapSize._1024,
+            filter = FilterMode.PCF2x2,
             cascadeCount = 4,
             cascadeRatio1 = 0.1f,
             cascadeRatio2 = 0.25f,
@@ -39,6 +40,7 @@ namespace CustomRenderPipeline
     public struct Directional
     {
         public MapSize atlasSize;
+        public FilterMode filter;
         [Range(1, 4)]
         public int cascadeCount;
         [Range(0, 1)]
@@ -46,6 +48,12 @@ namespace CustomRenderPipeline
         public Vector3 CascadeRatios => new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
         [Range(0.001f, 1)] 
         public float cascadeFade;
+
     }
 
+
+    public enum FilterMode
+    {
+        PCF2x2, PCF3x3, PCF5x5, PCF7x7
+    }
 }
