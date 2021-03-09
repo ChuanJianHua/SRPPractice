@@ -80,6 +80,25 @@ float SampleDirectionalShadowAtlas(float3 positionSTS)
         _DirectionalShadowAtlas, SHADOW_SAMPLER, positionSTS);
 }
 
+float FilterDirectionalShadow(float3 positionSTS)
+{
+#if defined(DIRECTIONAL_FILTER_SETUP)
+    float weights[DIRECTIONAL_FILTER_SAMPLES]
+    float2 positions[DIRECTIONAL_FILTER_SAMPLES];
+    float4 size = _ShadowAtlasSize.yyxx;
+    DIRECTIONAL_FILTER_SETUP(size, positionSTS.xy, weigths, positions)
+    float shadow = 0;
+    for (int i = 0; i < DIRECTIONAL_FILTER_SAMPLES; i++)
+    {
+        shadow += weights[i] * SampleDirectionalShadowAtlas(float3(positions[i].xy, positionSTS.z));
+    }
+    return shadow;
+#else
+    return SampleDirectionalShadowAtlas(positionSTS);
+#endif
+}
+
+
 float GetDirectionalShadowAttenuation(DirectionalShadowData directional, ShadowData global, Surface surfaceWS)
 {
     if (directional.strength <= 0.0)
@@ -88,7 +107,9 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData directional, ShadowD
     }
     float3 normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex].y);   
     float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex], float4(surfaceWS.position + normalBias, 1.0)).xyz;
-    float shadow = SampleDirectionalShadowAtlas(positionSTS);
+    float shadow = FilterDirectionalShadow(positionSTS);
     return lerp(1.0, shadow, directional.strength);
 }
-#endif
+
+
+#endif                                                                                                                                                      
