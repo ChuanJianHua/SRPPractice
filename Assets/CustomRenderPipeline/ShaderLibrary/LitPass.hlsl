@@ -44,13 +44,6 @@ VertexOutput LitPassVertex(VertexInput input)
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     float3 worldPos = TransformObjectToWorld(input.poistion);
     output.positionCS = TransformWorldToHClip(worldPos);
-    #if UNITY_REVERSED_Z
-        output.positionCS.z = min(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
-    #else
-        output.positionCS.z =
-                    max(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);                                   
-    #endif
-    
     float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
     output.baseUV = input.baseUV * baseST.xy +  baseST.zw; 
     output.normal = TransformObjectToWorldNormal(input.normal);
