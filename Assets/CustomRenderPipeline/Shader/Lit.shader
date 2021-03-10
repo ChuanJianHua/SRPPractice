@@ -26,6 +26,7 @@
             #pragma target 3.5
             #pragma shader_feature _CLIPPING
 			#pragma multi_compile_instancing
+            #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
 			#pragma vertex LitPassVertex
 			#pragma fragment LitPassFragment
 			#pragma shader_feature _PREMULTIPLY_ALPHA
@@ -43,7 +44,6 @@
             HLSLPROGRAM
             #pragma target 3.5
             #pragma shader_feature _CLIPPING
-            #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
 			#pragma multi_compile_instancing
 			#pragma vertex ShadowCasterPassVertex
 			#pragma fragment ShadowCasterPassFragment 

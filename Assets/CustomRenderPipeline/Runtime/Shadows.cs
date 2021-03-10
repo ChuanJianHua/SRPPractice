@@ -127,8 +127,8 @@ namespace CustomRenderPipeline
             float f = 1f - settings.directional.cascadeFade;
             buffer.SetGlobalVector(shadowDistanceFadeId,
                 new Vector4(1 / settings.maxDistance, 1 / settings.distanceFade, 1f / (1f - f * f)));
-            SetKeywords();            
             buffer.SetGlobalVector(shadowAtlasSizeId, new Vector4(atlasSize, 1f / atlasSize));
+            SetKeywords();            
             buffer.EndSample(bufferName);
             ExecuteBuffer();
         }
@@ -166,12 +166,11 @@ namespace CustomRenderPipeline
         void SetCascadeData(int index, Vector4 cullingSphere, float tileSize)
         {
             float texelSize = 2f * cullingSphere.w / tileSize;
-            texelSize *= 1.4142136f;
+            float filterSize = texelSize * ((float) settings.directional.filter + 1f);
+            cullingSphere.w -= filterSize;
             cullingSphere.w *= cullingSphere.w;
             cascadeCullingSpheres[index] = cullingSphere;
-
-            cascadeData[index] = new Vector4(1f / cullingSphere.w, texelSize);
-
+            cascadeData[index] = new Vector4(1f / cullingSphere.w, filterSize * 1.4142136f);
         }
 
         public void Cleanup()

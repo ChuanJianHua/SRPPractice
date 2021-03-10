@@ -39,6 +39,7 @@ struct DirectionalShadowData
 struct ShadowData
 {
     int cascadeIndex;
+    float cascadeBlend;
     float strength;
 };
 
@@ -51,7 +52,7 @@ ShadowData GetShadowData(Surface surfaceWS)
 {
     ShadowData data;
     data.strength = FadedShadowStrength(surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);
-    data.cascadeIndex = 0;
+    data.cascadeBlend = 1.0;
     int i = 0;
     for (i = 0; i < _CascadeCount ; i++)
     {
@@ -59,9 +60,14 @@ ShadowData GetShadowData(Surface surfaceWS)
         float distanceSquare = DistanceSquare(sphere.xyz, surfaceWS.position);
         if (distanceSquare < sphere.w)
         {
+            float fade = FadedShadowStrength(distanceSquare, _CascadeData[i].x, _ShadowDistanceFade.z);
             if (i == _CascadeCount - 1)
             {
-                data.strength *= FadedShadowStrength(distanceSquare, _CascadeData[i].x, _ShadowDistanceFade.z);                
+                data.strength *= fade;             
+            }
+            else
+            {
+                data.cascadeBlend = fade;
             }
             break;   
         }
@@ -83,10 +89,10 @@ float SampleDirectionalShadowAtlas(float3 positionSTS)
 float FilterDirectionalShadow(float3 positionSTS)
 {
 #if defined(DIRECTIONAL_FILTER_SETUP)
-    float weights[DIRECTIONAL_FILTER_SAMPLES]
+    float weights[DIRECTIONAL_FILTER_SAMPLES];
     float2 positions[DIRECTIONAL_FILTER_SAMPLES];
     float4 size = _ShadowAtlasSize.yyxx;
-    DIRECTIONAL_FILTER_SETUP(size, positionSTS.xy, weigths, positions)
+    DIRECTIONAL_FILTER_SETUP(size, positionSTS.xy, weights, positions);
     float shadow = 0;
     for (int i = 0; i < DIRECTIONAL_FILTER_SAMPLES; i++)
     {
@@ -108,6 +114,10 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData directional, ShadowD
     float3 normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex].y);   
     float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex], float4(surfaceWS.position + normalBias, 1.0)).xyz;
     float shadow = FilterDirectionalShadow(positionSTS);
+    // if (global.cascadeBlend < 1.0)
+    // {
+    //     
+    // }
     return lerp(1.0, shadow, directional.strength);
 }
 
