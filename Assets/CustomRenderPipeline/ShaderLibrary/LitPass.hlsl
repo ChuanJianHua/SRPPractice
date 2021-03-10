@@ -76,6 +76,7 @@ float4 LitPassFragment(VertexOutput input) : SV_TARGET
     surface.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
     surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.depth = -TransformWorldToView(input.positionWS).z;
+    surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
     #if defined(_PREMULTIPLY_ALPHA)
         BRDF brdf = GetBRDF(surface, true);
     #else

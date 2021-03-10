@@ -21,7 +21,8 @@ namespace CustomRenderPipeline
             cascadeRatio1 = 0.1f,
             cascadeRatio2 = 0.25f,
             cascadeRatio3 = 0.5f,
-            cascadeFade = 0.1f
+            cascadeFade = 0.1f,
+            cascadeBlendMode = CascadeBlendMode.Hard
         };
     }
 
@@ -48,7 +49,12 @@ namespace CustomRenderPipeline
         public Vector3 CascadeRatios => new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
         [Range(0.001f, 1)] 
         public float cascadeFade;
+        public CascadeBlendMode cascadeBlendMode;
+    }
 
+    public enum CascadeBlendMode
+    {
+        Hard, Soft, Dither
     }
 
 

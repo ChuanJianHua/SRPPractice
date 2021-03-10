@@ -4592,7 +4592,7 @@ MonoBehaviour:
   baseColor: {r: 0.9666375, g: 0.70554465, b: 0.990566, a: 1}
   alphaCutoff: 0.5
   metallic: 0
-  smoothness: 0.5
+  smoothness: 0.257
 --- !u!135 &447070330
 SphereCollider:
   m_ObjectHideFlags: 0

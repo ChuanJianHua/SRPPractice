@@ -41,6 +41,12 @@ namespace CustomRenderPipeline
             "_DIRECTIONAL_PCF5",
             "_DIRECTIONAL_PCF7"
         };
+
+        private static string[] cascadeBlendKeyWords =
+        {
+            "_CASCADE_BLEND_SOFT",
+            "_CASCADE_BLEND_DITHER",
+        };
             
 
         private static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
@@ -128,7 +134,8 @@ namespace CustomRenderPipeline
             buffer.SetGlobalVector(shadowDistanceFadeId,
                 new Vector4(1 / settings.maxDistance, 1 / settings.distanceFade, 1f / (1f - f * f)));
             buffer.SetGlobalVector(shadowAtlasSizeId, new Vector4(atlasSize, 1f / atlasSize));
-            SetKeywords();            
+            SetKeywords(directionalFilterKeywords, (int)settings.directional.filter - 1);            
+            SetKeywords(cascadeBlendKeyWords, (int)settings.directional.cascadeBlendMode - 1);            
             buffer.EndSample(bufferName);
             ExecuteBuffer();
         }
@@ -142,12 +149,14 @@ namespace CustomRenderPipeline
             int tileOffset = index * cascadeCount;
             Vector3 ratios = settings.directional.CascadeRatios;
                 
+            float cullingFactor = Mathf.Max(0, 0.8f - settings.directional.cascadeFade);
             for (int i = 0; i < cascadeCount; i++)
             {
                 cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(light.visibleLightIndex, i, cascadeCount,
                     ratios, tileSize, light.nearPlaneOffset,
                     out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,
                     out ShadowSplitData splitData);
+                splitData.shadowCascadeBlendCullingFactor = cullingFactor;
                 shadowSettings.splitData = splitData;
                 if (index == 0)
                 {
@@ -179,14 +188,13 @@ namespace CustomRenderPipeline
             ExecuteBuffer();
         }
         
-        void SetKeywords () {
-            int enabledIndex = (int)settings.directional.filter - 1;
-            for (int i = 0; i < directionalFilterKeywords.Length; i++) {
-                if (i == enabledIndex) {
-                    buffer.EnableShaderKeyword(directionalFilterKeywords[i]);
+        void SetKeywords (string[] keyWords, int enableIndex) {
+            for (int i = 0; i < keyWords.Length; i++) {
+                if (i == enableIndex) {
+                    buffer.EnableShaderKeyword(keyWords[i]);
                 }
                 else {
-                    buffer.DisableShaderKeyword(directionalFilterKeywords[i]);
+                    buffer.DisableShaderKeyword(keyWords[i]);
                 }
             }
         }

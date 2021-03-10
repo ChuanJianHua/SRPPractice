@@ -76,6 +76,16 @@ ShadowData GetShadowData(Surface surfaceWS)
     {
         data.strength = 0.0;
     }
+#if defined(_CASCADE_BLEND_DITHER)
+    else if (data.cascadeBlend < surfaceWS.dither)
+    {
+        i = i + 1;    
+    }
+#endif
+
+#if !defined(_CASCADE_BLEND_SOFT)
+    data.cascadeBlend = 1.0;
+#endif
     data.cascadeIndex = i;
     return data;
 }
@@ -107,6 +117,9 @@ float FilterDirectionalShadow(float3 positionSTS)
 
 float GetDirectionalShadowAttenuation(DirectionalShadowData directional, ShadowData global, Surface surfaceWS)
 {
+#if !defined(_RECEIVE_SHADOWS)
+    return 1.0;
+#endif
     if (directional.strength <= 0.0)
     {
         return 1.0;
@@ -114,10 +127,13 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData directional, ShadowD
     float3 normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex].y);   
     float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex], float4(surfaceWS.position + normalBias, 1.0)).xyz;
     float shadow = FilterDirectionalShadow(positionSTS);
-    // if (global.cascadeBlend < 1.0)
-    // {
-    //     
-    // }
+    if (global.cascadeBlend < 1.0)
+    {
+        normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex + 1].y);
+        positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex + 1], float4(surfaceWS.position + normalBias, 1.0)).xyz;
+        shadow = lerp(FilterDirectionalShadow(positionSTS), shadow, global.cascadeBlend);
+    }
+    
     return lerp(1.0, shadow, directional.strength);
 }
 
