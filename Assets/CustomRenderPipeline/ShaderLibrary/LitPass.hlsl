@@ -8,6 +8,7 @@
 #include "../ShaderLibrary/Shadows.hlsl"
 #include "../ShaderLibrary/Light.hlsl"
 #include "../ShaderLibrary/BRDF.hlsl"
+#include "../ShaderLibrary/GI.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
 
 TEXTURE2D(_BaseMap);
@@ -22,9 +23,10 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 struct VertexInput {
-    float3 poistion : POSITION;
+    float3 positionCS : POSITION;
     float2 baseUV : TEXCOORD0;
     float3 normal : NORMAL;
+    GI_ATTRIBUTE_DATA                               
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -33,6 +35,7 @@ struct VertexOutput {
     float3 positionWS : VAR_POSITION;    
     float2 baseUV : TEXCOORD1;
     float3 normal : TEXCOORD2;
+    GI_VARYINGS_DATA    
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -42,12 +45,13 @@ VertexOutput LitPassVertex(VertexInput input)
     VertexOutput output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
-    float3 worldPos = TransformObjectToWorld(input.poistion);
+    TRANSFER_GI_DATA(input, output);
+    float3 worldPos = TransformObjectToWorld(input.positionCS);
     output.positionCS = TransformWorldToHClip(worldPos);
     float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
     output.baseUV = input.baseUV * baseST.xy +  baseST.zw; 
     output.normal = TransformObjectToWorldNormal(input.normal);
-    output.positionWS = TransformObjectToWorld(input.poistion.xyz); 
+    output.positionWS = TransformObjectToWorld(input.positionCS.xyz); 
     return output;                   
 }
 
@@ -75,7 +79,8 @@ float4 LitPassFragment(VertexOutput input) : SV_TARGET
     #else
         BRDF brdf = GetBRDF(surface);
     #endif
-    float3 color = GetLighting(surface, brdf);
+    GI gi = GetGI(GI_FRAGMENT_DATA(input));
+    float3 color = GetLighting(surface, brdf, gi);
     return float4(color, surface.alpha);
 }
 

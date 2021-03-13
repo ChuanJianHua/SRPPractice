@@ -80,7 +80,8 @@ namespace CustomRenderPipeline
                 unLitShaderTagId, sortingSettings)
             {
                 enableDynamicBatching = useDynamicBatching,
-                enableInstancing = useGPUInstancing
+                enableInstancing = useGPUInstancing,
+                perObjectData = PerObjectData.Lightmaps
             };
             drawingSettings.SetShaderPassName(1, litShaderTagId);
             var filteringSettings = new FilteringSettings(RenderQueueRange.all);
