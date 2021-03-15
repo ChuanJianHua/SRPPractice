@@ -18,6 +18,10 @@
     }
     SubShader
     {
+    	HLSLINCLUDE
+    	#include "../ShaderLibrary/Common.hlsl"
+    	#include "../ShaderLibrary/UnlitInput.hlsl"
+		ENDHLSL
         Pass
         {
         	Tags { "LightMode" = "CustomLit" }
@@ -56,6 +60,20 @@
 			#pragma fragment ShadowCasterPassFragment 
 			#pragma shader_feature _PREMULTIPLY_ALPHA
 			#include "../ShaderLibrary/ShadowCasterPass.hlsl"
+			ENDHLSL
+        }
+    	
+    	
+    	Pass
+        {
+        	Tags { "LightMode" = "Meta" }
+			Cull Off        	
+
+            HLSLPROGRAM
+            #pragma target 3.5
+			#pragma vertex MetaPassVertex
+			#pragma fragment MetaPassFragment 
+			#include "../ShaderLibrary/MetaPass.hlsl"
 			ENDHLSL
         }
     }

@@ -1,5 +1,5 @@
-﻿#ifndef CUSTOM_UNLIT_INPUT_INCLUDED
-#define CUSTOM_UNLIT_INPUT_INCLUDED
+﻿#ifndef CUSTOM_UNITY_INPUT_INCLUDED
+#define CUSTOM_UNITY_INPUT_INCLUDED
 
 CBUFFER_START(UnityPerDraw)
 	float4x4 unity_ObjectToWorld;
@@ -16,6 +16,11 @@ CBUFFER_START(UnityPerDraw)
 	float4 unity_SHBg;
 	float4 unity_SHBb;
 	float4 unity_SHC;
+
+	float4 unity_ProbeVolumeParams;
+	float4x4 unity_ProbeVolumeWorldToObject;
+	float4 unity_ProbeVolumeSizeInv;
+	float4 unity_ProbeVolumeMin;
 CBUFFER_END
 
 float3 _WorldSpaceCameraPos;

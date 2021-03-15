@@ -13,6 +13,10 @@
     }
     SubShader
     {
+    	HLSLINCLUDE
+    	#include "../ShaderLibrary/Common.hlsl"
+    	#include "../ShaderLibrary/UnlitInput.hlsl"
+    	ENDHLSL
         Pass
         {
         	Blend [_SrcBlend] [_DstBlend]
@@ -25,6 +29,24 @@
 			#pragma fragment UnlitPassFragment
 			
 			#include "../ShaderLibrary/UnlitPass.hlsl"
+			ENDHLSL
+        }
+    	
+    	Pass
+        {
+        	Tags { "LightMode" = "ShadowCaster" }
+        	
+        	colormask 0
+
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma shader_feature _CLIPPING
+			#pragma multi_compile_instancing
+            #pragma multi_compile _ _SHADOWS_CLIP _SHADOWS_DITHER
+			#pragma vertex ShadowCasterPassVertex
+			#pragma fragment ShadowCasterPassFragment 
+			#pragma shader_feature _PREMULTIPLY_ALPHA
+			#include "../ShaderLibrary/ShadowCasterPass.hlsl"
 			ENDHLSL
         }
     }
