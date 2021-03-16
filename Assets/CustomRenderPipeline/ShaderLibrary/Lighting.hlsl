@@ -1,5 +1,5 @@
-﻿#ifndef CUSTOM_LIGHTING_INCLUDE
-#define CUSTOM_LIGHTING_INCLUDE
+﻿#ifndef CUSTOM_LIGHTING_INCLUDED
+#define CUSTOM_LIGHTING_INCLUDED
 
 float3 IncomingLight(Surface surface, Light light)
 {

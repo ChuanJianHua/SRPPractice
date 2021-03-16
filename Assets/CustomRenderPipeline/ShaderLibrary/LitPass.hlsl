@@ -66,6 +66,7 @@ float4 LitPassFragment(VertexOutput input) : SV_TARGET
     #endif
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface);
     float3 color = GetLighting(surface, brdf, gi);
+    // color += GetEmission(input.baseUV).xyz;
     return float4(color, surface.alpha);
 }
 
