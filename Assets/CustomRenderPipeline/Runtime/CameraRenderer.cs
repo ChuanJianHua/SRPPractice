@@ -21,10 +21,6 @@ namespace CustomRenderPipeline
         private static ShaderTagId unLitShaderTagId = new ShaderTagId("SRPDefaultUnlit"); 
         private static ShaderTagId litShaderTagId = new ShaderTagId("CustomLit");
 
-        private const int MaxLightCount = 4;
-
-        private Vector4[] visibleLightColors = new Vector4[MaxLightCount];
-
         private Lighting lighting = new Lighting();
         
         public void Render (ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing, ShadowSettings shadowSettings) {
@@ -84,7 +80,9 @@ namespace CustomRenderPipeline
                 perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe | PerObjectData.LightProbeProxyVolume
             };
             drawingSettings.SetShaderPassName(1, litShaderTagId);
-            var filteringSettings = new FilteringSettings(RenderQueueRange.all);
+            
+            var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
+            
             context.DrawRenderers(cullingResults,ref drawingSettings, ref filteringSettings);
             context.DrawSkybox(camera);
     

@@ -1,21 +1,21 @@
 ﻿#ifndef CUSTOM_SHADOW_CASTER_PASS_INCLUDED
 #define CUSTOM_SHADOW_CASTER_PASS_INCLUDED
 
-struct VertexInput {
+struct Attribute {
     float3 positionOS : POSITION;
     float2 baseUV : TEXCOORD0;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-struct VertexOutput {
+struct Varyings {
     float4 positionCS : SV_POSITION;
     float2 baseUV : TEXCOORD1;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-VertexOutput ShadowCasterPassVertex(VertexInput input)
+Varyings ShadowCasterPassVertex(Attribute input)
 {
-    VertexOutput output;
+    Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     float3 positionWS = TransformObjectToWorld(input.positionOS);
@@ -32,7 +32,7 @@ VertexOutput ShadowCasterPassVertex(VertexInput input)
     return output;                   
 }
 
-void ShadowCasterPassFragment(VertexOutput input)
+void ShadowCasterPassFragment(Varyings input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
     float4 base = GetBase(input.baseUV);

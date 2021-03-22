@@ -14,12 +14,12 @@ public class PerObjectMaterialProperties : MonoBehaviour {
 
 	[SerializeField]
 	Color baseColor = Color.white;
-	
-	[SerializeField, ColorUsage(false, true)]
-	Color emissionColor = Color.black;
 
 	[SerializeField, Range(0f, 1f)]
 	float alphaCutoff = 0.5f, metallic = 0f, smoothness = 0.5f;
+
+	[SerializeField, ColorUsage(false, true)]
+	Color emissionColor = Color.black;
 
 	void Awake () {
 		OnValidate();

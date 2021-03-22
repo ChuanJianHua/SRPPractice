@@ -6,24 +6,24 @@
 #include "../ShaderLibrary/Light.hlsl"
 #include "../ShaderLibrary/BRDF.hlsl"
 
-struct VertexInput {
+bool4 unity_MetaFragmentControl;
+float unity_OneOverOutputBoost;
+float unity_MaxOutputValue;
+
+struct Attribute {
     float3 positionOS : POSITION;
     float2 baseUV : TEXCOORD0;
     float2 lightMapUV : TEXCOORD1; 
 };
 
-struct VertexOutput {
+struct Varyings {
     float4 positionCS : SV_POSITION;
     float2 baseUV : VAR_BASE_UV;
 };
 
-bool4 unity_MetaFragmentControl;
-float unity_OneOverOutputBoost;
-float unity_MaxOutputValue;
-
-VertexOutput MetaPassVertex(VertexInput input)
+Varyings MetaPassVertex(Attribute input)
 {
-    VertexOutput output;
+    Varyings output;
     input.positionOS.xy = input.lightMapUV * unity_LightmapST.xy + unity_LightmapST.zw;
     input.positionOS.z = input.positionOS.z > 0.0 ? FLT_MIN : 0.0;
     output.positionCS = TransformObjectToHClip( input.positionOS);
@@ -31,7 +31,7 @@ VertexOutput MetaPassVertex(VertexInput input)
     return output;     
 }
 
-float4 MetaPassFragment(VertexOutput input) : SV_TARGET
+float4 MetaPassFragment(Varyings input) : SV_TARGET
 {
     float4 base = GetBase(input.baseUV);
     Surface surface;
@@ -56,4 +56,4 @@ float4 MetaPassFragment(VertexOutput input) : SV_TARGET
     return meta;      
 }
 
-#endif // CUSTOM_UNLIT_PASS_INCLUDED                                    
+#endif                                    

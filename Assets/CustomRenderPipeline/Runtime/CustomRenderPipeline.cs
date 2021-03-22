@@ -20,15 +20,15 @@ namespace CustomRenderPipeline
 		
 		protected override void Render (ScriptableRenderContext renderContext, Camera[] cameras) 
 		{
-			if (cameras.Length == 0) return;
-			BeginFrameRendering(renderContext, cameras);
+			// if (cameras.Length == 0) return;
+			// BeginFrameRendering(renderContext, cameras);
 			
 			foreach (var camera in cameras) {
-			    BeginCameraRendering(renderContext, camera);
+			    // BeginCameraRendering(renderContext, camera);
 			    cameraRenderer.Render(renderContext, camera, useDynamicBatching, useGPUInstancing, _shadowSettings);
-				EndCameraRendering(renderContext, camera);
+				// EndCameraRendering(renderContext, camera);
 			}
-			EndFrameRendering(renderContext, cameras);
+			// EndFrameRendering(renderContext, cameras);
 		}
 	}
 }

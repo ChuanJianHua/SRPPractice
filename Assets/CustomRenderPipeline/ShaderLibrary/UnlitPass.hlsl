@@ -1,21 +1,21 @@
 ﻿#ifndef CUSTOM_UNLIT_PASS_INCLUDED
 #define CUSTOM_UNLIT_PASS_INCLUDED
 
-struct VertexInput {
+struct Attribute {
     float4 pos : POSITION;
     float2 baseUV : TEXCOORD0;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-struct VertexOutput {
+struct Varyings {
     float4 clipPos : SV_POSITION;
     float2 baseUV : VAR_BASE_UV;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-VertexOutput UnlitPassVertex(VertexInput input)
+Varyings UnlitPassVertex(Attribute input)
 {
-    VertexOutput output;
+    Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     float3 worldPos = TransformObjectToWorld(input.pos.xyz);
@@ -24,7 +24,7 @@ VertexOutput UnlitPassVertex(VertexInput input)
     return output;                   
 }
 
-float4 UnlitPassFragment(VertexOutput input) : SV_TARGET
+float4 UnlitPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
       float4 color = GetBase(input.baseUV);

@@ -1,8 +1,6 @@
 ﻿#ifndef CUSTOM_LIT_PASS_INCLUDED
 #define CUSTOM_LIT_PASS_INCLUDED
 
-#define MAX_VISIBLE_LIGHTS 4
-
 #include "../ShaderLibrary/Surface.hlsl"
 #include "../ShaderLibrary/Shadows.hlsl"
 #include "../ShaderLibrary/Light.hlsl"
@@ -10,7 +8,7 @@
 #include "../ShaderLibrary/GI.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
 
-struct VertexInput {
+struct Attribute {
     float3 positionCS : POSITION;
     float2 baseUV : TEXCOORD0;
     float3 normal : NORMAL;
@@ -18,7 +16,7 @@ struct VertexInput {
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-struct VertexOutput {
+struct Varyings {
     float4 positionCS : SV_POSITION;
     float3 positionWS : VAR_POSITION;    
     float2 baseUV : TEXCOORD1;
@@ -28,9 +26,9 @@ struct VertexOutput {
 };
 
 
-VertexOutput LitPassVertex(VertexInput input)
+Varyings LitPassVertex(Attribute input)
 {
-    VertexOutput output;
+    Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     TRANSFER_GI_DATA(input, output);
@@ -42,7 +40,7 @@ VertexOutput LitPassVertex(VertexInput input)
     return output;                   
 }
 
-float4 LitPassFragment(VertexOutput input) : SV_TARGET
+float4 LitPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     float4 base = GetBase(input.baseUV);
@@ -66,7 +64,7 @@ float4 LitPassFragment(VertexOutput input) : SV_TARGET
     #endif
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface);
     float3 color = GetLighting(surface, brdf, gi);
-    // color += GetEmission(input.baseUV).xyz;
+    color += GetEmission(input.baseUV);
     return float4(color, surface.alpha);
 }
 

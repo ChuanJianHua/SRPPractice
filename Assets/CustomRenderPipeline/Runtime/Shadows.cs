@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
-using Matrix4x4 = UnityEngine.Matrix4x4;
-using Vector3 = UnityEngine.Vector3;
 
 namespace CustomRenderPipeline
 {
@@ -21,9 +19,6 @@ namespace CustomRenderPipeline
         CullingResults cullingResults;
 
         ShadowSettings settings;
-
-        private ShadowedDirectionalLight[] shadowedDirectionalLights =
-            new ShadowedDirectionalLight[maxShadowedDirectionalLightCount];
 
         private static int
             dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas"),
@@ -47,13 +42,22 @@ namespace CustomRenderPipeline
             "_CASCADE_BLEND_SOFT",
             "_CASCADE_BLEND_DITHER",
         };
-            
 
         private static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
 
         private static Vector4[]
             cascadeCullingSpheres = new Vector4[maxCascades],
             cascadeData = new Vector4[maxCascades];
+
+        struct ShadowedDirectionalLight {
+            public int visibleLightIndex;
+            public float slopeScaleBias;
+            public float nearPlaneOffset;
+        }
+        
+        private ShadowedDirectionalLight[] shadowedDirectionalLights =
+            new ShadowedDirectionalLight[maxShadowedDirectionalLightCount];
+
         
         private int shadowedDirectionalLightCount;
 
@@ -230,9 +234,5 @@ namespace CustomRenderPipeline
         }
     }
     
-    struct ShadowedDirectionalLight {
-        public int visibleLightIndex;
-        public float slopeScaleBias;
-        public float nearPlaneOffset;
-    }
+
 }
