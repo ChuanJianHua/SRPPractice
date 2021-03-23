@@ -1,5 +1,5 @@
-﻿#ifndef CUSTOM_SHADOWS_INCLUDE
-#define CUSTOM_SHADOWS_INCLUDE
+﻿#ifndef CUSTOM_SHADOWS_INCLUDED
+#define CUSTOM_SHADOWS_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl"
 #if defined(_DIRECTIONAL_PCF3)
@@ -57,7 +57,7 @@ ShadowData GetShadowData(Surface surfaceWS)
     for (i = 0; i < _CascadeCount ; i++)
     {
         float4 sphere = _CascadeCullingSpheres[i];
-        float distanceSquare = DistanceSquare(sphere.xyz, surfaceWS.position);
+        float distanceSquare = DistanceSquared(sphere.xyz, surfaceWS.position);
         if (distanceSquare < sphere.w)
         {
             float fade = FadedShadowStrength(distanceSquare, _CascadeData[i].x, _ShadowDistanceFade.z);

@@ -32,7 +32,7 @@ float3 SampleLightMap(float2 lightMapUV)
 #if defined(LIGHTMAP_ON)
     return SampleSingleLightmap(TEXTURE2D_ARGS(unity_Lightmap, sampler_unity_Lightmap),
         lightMapUV,
-        float4(1.0, 1.0, 1.0, 1.0), 
+        float4(1.0, 1.0, 0.0, 0.0), 
     #if defined(UNITY_LIGHTMAP_FULL_HDR)
         false,
     #else
